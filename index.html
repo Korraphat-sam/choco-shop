@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cocoa Noir — ช็อกโกแลตแท่งคราฟต์</title>
+<meta name="description" content="ช็อกโกแลตแท่งคราฟต์ ทำสดใหม่ เลือกได้ 3 รสชาติ ส่งทั่วไทย">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;700&family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2a140b;--cocoa:#4a2a1a;--cream:#f7efe3;--gold:#b8793a;--card:#fffaf2;--line:#e5d6c0}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun',sans-serif;color:var(--ink);background:var(--cream);line-height:1.6}
+h1,h2,h3{font-family:'Noto Serif Thai',serif;margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;background:rgba(247,239,227,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5}
+header .wrap{display:flex;justify-content:space-between;align-items:center;height:56px}
+.logo{font-family:'Noto Serif Thai',serif;font-weight:700;letter-spacing:.08em}
+header a{color:var(--ink);text-decoration:none;font-size:15px;margin-left:18px}
+.hero{background:var(--cocoa);color:var(--cream);padding:72px 0}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(32px,5vw,52px);line-height:1.25}
+.hero p{opacity:.85;font-size:18px;max-width:46ch}
+.btn{display:inline-block;background:var(--gold);color:#fff;border:0;padding:13px 26px;border-radius:999px;font:700 16px 'Sarabun';cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:wait}
+.hero img{width:100%;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+section{padding:64px 0}
+section h2{font-size:30px;margin-bottom:8px}
+.sub{color:#7a6552;margin:0 0 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.card .b{padding:18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{font-size:19px}
+.card .d{color:#6f5b49;font-size:15px;flex:1}
+.price{font-weight:700;font-size:20px;color:var(--gold)}
+.qty{display:flex;align-items:center;gap:10px;margin-top:8px}
+.qty button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:20px;cursor:pointer}
+.qty output{min-width:28px;text-align:center;font-weight:700}
+.perks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;text-align:center}
+.perks div{padding:20px;border:1px dashed var(--line);border-radius:14px;background:var(--card)}
+.order{background:#efe2cf}
+.panel{display:grid;grid-template-columns:1.2fr .8fr;gap:28px}
+form,.summary{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+label{display:block;font-size:14px;font-weight:500;margin:12px 0 4px}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:16px 'Sarabun';background:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.summary{position:sticky;top:76px;align-self:start}
+.summary li{display:flex;justify-content:space-between;list-style:none;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.summary ul{padding:0;margin:12px 0}
+.total{font-size:22px;font-weight:700;display:flex;justify-content:space-between}
+.msg{margin-top:14px;padding:14px;border-radius:10px;display:none}
+.msg.ok{display:block;background:#e3f2dc;color:#25501a}
+.msg.err{display:block;background:#fbe3e0;color:#7a1d12}
+footer{background:var(--ink);color:#cdb89e;text-align:center;padding:28px 0;font-size:14px}
+@media(max-width:760px){.hero .wrap,.panel{grid-template-columns:1fr}.summary{position:static}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><span class="logo" id="brand">COCOA NOIR</span><nav><a href="#products">สินค้า</a><a href="#order">สั่งซื้อ</a></nav></div></header>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <h1>ช็อกโกแลตแท่ง<br>ทำสดใหม่ทุกสัปดาห์</h1>
+    <p>คัดเมล็ดโกโก้คุณภาพ คั่วและบดเองเป็นล็อตเล็ก เลือกได้ตั้งแต่ดาร์กเข้มข้นจนถึงไวท์มัทฉะ</p>
+    <p><a class="btn" href="#products">เลือกรสชาติ</a></p>
+  </div>
+  <img src="images/dark-70.svg" alt="ช็อกโกแลตแท่งดาร์ก 70%">
+</div></div>
+
+<section id="products"><div class="wrap">
+  <h2>รสชาติของเรา</h2>
+  <p class="sub">แท่งละ 60 กรัม เลือกจำนวนแล้วเลื่อนลงไปกรอกที่อยู่ได้เลย</p>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap perks">
+  <div>🍫<br><b>ล็อตเล็ก ทำสด</b><br>ผลิตทุกสัปดาห์</div>
+  <div>📦<br><b>แพ็คกันกระแทก</b><br>ส่งทั่วไทย 1–3 วัน</div>
+  <div>🚚<br><b>ส่งฟรี</b><br>เมื่อซื้อครบ <span id="freeAt"></span> บาท</div>
+</div></section>
+
+<section class="order" id="order"><div class="wrap">
+  <h2>สั่งซื้อ</h2>
+  <p class="sub">กรอกข้อมูลจัดส่ง ระบบจะบันทึกลง Google Sheets ให้ร้านหยิบและแพ็คอัตโนมัติ</p>
+  <div class="panel">
+    <form id="f">
+      <label>ชื่อ-นามสกุลผู้รับ *<input name="name" required></label>
+      <div class="row">
+        <label>เบอร์โทร *<input name="phone" required inputmode="tel" pattern="0[0-9]{8,9}" placeholder="0812345678"></label>
+        <label>อีเมล<input name="email" type="email"></label>
+      </div>
+      <label>ที่อยู่ (บ้านเลขที่ ซอย ถนน แขวง/ตำบล เขต/อำเภอ) *<textarea name="address" rows="3" required></textarea></label>
+      <div class="row">
+        <label>จังหวัด *<input name="province" required></label>
+        <label>รหัสไปรษณีย์ *<input name="zip" required inputmode="numeric" pattern="[0-9]{5}" maxlength="5"></label>
+      </div>
+      <label>หมายเหตุ<textarea name="note" rows="2" placeholder="เช่น ขอกล่องของขวัญ"></textarea></label>
+      <p style="margin:18px 0 0"><button class="btn" id="submit" type="submit">ยืนยันคำสั่งซื้อ</button></p>
+      <div class="msg" id="msg"></div>
+    </form>
+    <aside class="summary">
+      <h3>สรุปคำสั่งซื้อ</h3>
+      <ul id="lines"></ul>
+      <div class="total"><span>รวมทั้งสิ้น</span><span id="grand">฿0</span></div>
+      <p style="color:#7a6552;font-size:13px;margin-bottom:0">ชำระเงินแบบโอนผ่านพร้อมเพย์ — ร้านจะส่งรายละเอียดให้หลังรับออเดอร์</p>
+    </aside>
+  </div>
+</div></section>
+
+<footer><div class="wrap">© 2026 Cocoa Noir · โปรเจกต์การเรียน</div></footer>
+
+<script src="config.js"></script>
+<script>
+const S = window.SHOP, cart = {};
+const $ = id => document.getElementById(id);
+const baht = n => '฿' + n.toLocaleString('th-TH');
+$('brand').textContent = S.name.toUpperCase();
+$('freeAt').textContent = S.freeShippingOver;
+
+$('grid').innerHTML = S.products.map(p => `
+  <article class="card">
+    <img src="${p.image}" alt="${p.name}" loading="lazy">
+    <div class="b">
+      <h3>${p.name}</h3>
+      <div class="d">${p.desc}</div>
+      <div class="price">${baht(p.price)} <small style="font-weight:400;color:#7a6552">/ ${p.weight}</small></div>
+      <div class="qty">
+        <button type="button" data-sku="${p.sku}" data-d="-1" aria-label="ลด">−</button>
+        <output id="q-${p.sku}">0</output>
+        <button type="button" data-sku="${p.sku}" data-d="1" aria-label="เพิ่ม">+</button>
+      </div>
+    </div>
+  </article>`).join('');
+
+$('grid').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const sku = b.dataset.sku;
+  cart[sku] = Math.max(0, Math.min(99, (cart[sku] || 0) + Number(b.dataset.d)));
+  $('q-' + sku).textContent = cart[sku];
+  render();
+});
+
+function totals() {
+  const items = S.products.filter(p => cart[p.sku] > 0).map(p => ({sku:p.sku, name:p.name, qty:cart[p.sku], price:p.price}));
+  const sub = items.reduce((a, i) => a + i.qty * i.price, 0);
+  const ship = !sub ? 0 : (sub >= S.freeShippingOver ? 0 : S.shippingFee);
+  return {items, sub, ship, total: sub + ship};
+}
+function render() {
+  const t = totals();
+  $('lines').innerHTML = t.items.length
+    ? t.items.map(i => `<li><span>${i.name} × ${i.qty}</span><span>${baht(i.qty*i.price)}</span></li>`).join('')
+      + `<li><span>ค่าจัดส่ง</span><span>${t.ship ? baht(t.ship) : 'ฟรี'}</span></li>`
+    : '<li style="color:#7a6552">ยังไม่ได้เลือกสินค้า</li>';
+  $('grand').textContent = baht(t.total);
+}
+render();
+
+function show(cls, html) { const m = $('msg'); m.className = 'msg ' + cls; m.innerHTML = html; }
+
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const t = totals();
+  if (!t.items.length) return show('err', 'กรุณาเลือกสินค้าอย่างน้อย 1 ชิ้น');
+  const fd = Object.fromEntries(new FormData(e.target));
+  const order = {...fd, items: t.items, subtotal: t.sub, shipping: t.ship, total: t.total};
+  $('submit').disabled = true; $('submit').textContent = 'กำลังส่ง...';
+  try {
+    let id;
+    if (S.APPS_SCRIPT_URL) {
+      // text/plain ป้องกัน CORS preflight ของ Apps Script
+      const r = await fetch(S.APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'create', order})});
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'บันทึกไม่สำเร็จ');
+      id = j.orderId;
+    } else { // โหมดเดโม
+      const all = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+      id = 'CN' + String(all.length + 1).padStart(4, '0');
+      all.push({...order, orderId:id, timestamp:new Date().toISOString(), status:'new', tracking:''});
+      localStorage.setItem('demoOrders', JSON.stringify(all));
+    }
+    show('ok', `✅ รับออเดอร์แล้ว เลขที่ <b>${id}</b> ยอดรวม ${baht(t.total)} — ร้านจะติดต่อกลับทางเบอร์โทร`);
+    e.target.reset(); Object.keys(cart).forEach(k => { cart[k] = 0; $('q-' + k).textContent = 0; }); render();
+  } catch (err) {
+    show('err', 'เกิดข้อผิดพลาด: ' + err.message);
+  } finally {
+    $('submit').disabled = false; $('submit').textContent = 'ยืนยันคำสั่งซื้อ';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>หลังร้าน — หยิบ แพ็ค พิมพ์ใบจ่าหน้า</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2a140b;--gold:#b8793a;--line:#e5d6c0;--bg:#f7efe3}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--ink)}
+.top{background:var(--ink);color:#f7efe3;padding:12px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top h1{font-size:18px;margin:0;flex:1}
+.top input{padding:8px 10px;border-radius:8px;border:0;width:140px}
+button{font:500 15px 'Sarabun';padding:9px 16px;border-radius:999px;border:1px solid var(--gold);background:#fff;color:var(--ink);cursor:pointer}
+button.p{background:var(--gold);color:#fff}
+.tabs{display:flex;gap:6px;padding:14px 20px 0;flex-wrap:wrap}
+.tabs button{border-radius:10px 10px 0 0;border-bottom:0}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{padding:0 20px 40px}
+.box{background:#fffaf2;border:1px solid var(--line);border-radius:0 14px 14px 14px;padding:20px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f3e6d3}
+.tag{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;display:inline-block}
+.new{background:#fde8c8;color:#8a4b00}.picked{background:#d9e8fb;color:#1c4e8a}.packed{background:#e0f2d8;color:#25501a}.shipped{background:#e6e0f5;color:#4a2f8a}
+.pack-card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff}
+.pack-card.done{background:#eef8e8;border-color:#a9d391}
+.pack-card h3{margin:0 0 6px;font-size:16px}
+.chk{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:15px}
+.chk input{width:20px;height:20px}
+.muted{color:#7a6552;font-size:13px}
+.empty{padding:30px;text-align:center;color:#7a6552}
+/* ใบจ่าหน้า */
+.labels{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.label{background:#fff;border:2px solid #000;padding:12px 14px;font-size:14px;line-height:1.45;break-inside:avoid;min-height:270px;display:flex;flex-direction:column;gap:6px}
+.label .from{font-size:12px;border-bottom:1px dashed #000;padding-bottom:6px}
+.label .to{font-size:17px;font-weight:700;flex:1}
+.label .to .addr{font-weight:500;font-size:16px}
+.label .zip{font-size:30px;letter-spacing:5px;font-weight:700}
+.label .foot{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed #000;padding-top:6px;font-size:13px}
+.label .oid{font-size:22px;font-weight:700;font-family:monospace}
+.lblSel{margin:10px 0;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+@media print{
+  body{background:#fff}
+  .top,.tabs,.noprint,.hide-print{display:none!important}
+  main{padding:0}.box{border:0;padding:0}
+  .labels{gap:6mm}
+  .label{border:1.5px solid #000;min-height:128mm}
+  @page{size:A4;margin:8mm}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🍫 หลังร้าน Cocoa Noir</h1>
+  <span id="mode" class="muted" style="color:#d9bf9c"></span>
+  <input id="key" type="password" placeholder="รหัสแอดมิน">
+  <button class="p" id="load">โหลดออเดอร์</button>
+</div>
+<div class="tabs">
+  <button data-t="orders" class="on">① ออเดอร์</button>
+  <button data-t="pick">② ใบหยิบสินค้า</button>
+  <button data-t="pack">③ แพ็คสินค้า</button>
+  <button data-t="labels">④ ใบจ่าหน้าพัสดุ</button>
+</div>
+<main><div class="box" id="view"></div></main>
+
+<script src="config.js"></script>
+<script>
+const S = window.SHOP, $ = id => document.getElementById(id);
+const bySku = Object.fromEntries(S.products.map(p => [p.sku, p]));
+let orders = [], tab = 'orders', checks = JSON.parse(localStorage.getItem('packChecks') || '{}');
+const demo = !S.APPS_SCRIPT_URL;
+$('mode').textContent = demo ? 'โหมดเดโม (localStorage)' : 'เชื่อมต่อ Google Sheets';
+$('key').value = sessionStorage.getItem('adminKey') || '';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const stLabel = {new:'ใหม่', picked:'หยิบแล้ว', packed:'แพ็คแล้ว', shipped:'ส่งแล้ว'};
+
+async function load() {
+  const key = $('key').value;
+  if (!demo) {
+    try {
+      const r = await fetch(`${S.APPS_SCRIPT_URL}?action=list&key=${encodeURIComponent(key)}`);
+      const j = await r.json();
+      if (!j.ok) return alert('โหลดไม่สำเร็จ: ' + j.error);
+      orders = j.orders; sessionStorage.setItem('adminKey', key);
+    } catch (e) { return alert('เชื่อมต่อ Apps Script ไม่ได้: ' + e.message); }
+  } else {
+    if (key !== S.ADMIN_KEY) return alert('รหัสไม่ถูกต้อง (ดูใน config.js)');
+    orders = JSON.parse(localStorage.getItem('demoOrders') || '[]'); sessionStorage.setItem('adminKey', key);
+  }
+  render();
+}
+async function setStatus(ids, status, tracking) {
+  for (const id of ids) {
+    const o = orders.find(x => x.orderId === id); if (!o) continue;
+    if (status) o.status = status;
+    if (tracking !== undefined) o.tracking = tracking;
+    if (!demo) {
+      await fetch(S.APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({action:'update', key:$('key').value, orderId:id, status, tracking})});
+    }
+  }
+  if (demo) localStorage.setItem('demoOrders', JSON.stringify(orders));
+  render();
+}
+const active = () => orders.filter(o => o.status !== 'shipped');
+const itemsOf = o => (o.items || []).map(i => `${esc(i.name || bySku[i.sku]?.name)} ×${i.qty}`).join('<br>');
+
+function viewOrders() {
+  if (!orders.length) return '<div class="empty">ยังไม่มีออเดอร์ — กด “โหลดออเดอร์” หลังกรอกรหัส</div>';
+  return `<table><tr><th>เลขที่</th><th>เวลา</th><th>ผู้รับ</th><th>สินค้า</th><th>ยอด</th><th>สถานะ</th><th>Tracking</th></tr>` +
+    orders.slice().reverse().map(o => `<tr>
+      <td><b>${esc(o.orderId)}</b></td>
+      <td>${new Date(o.timestamp).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}</td>
+      <td>${esc(o.name)}<br><span class="muted">${esc(o.phone)}</span></td>
+      <td>${itemsOf(o)}</td><td>฿${o.total}</td>
+      <td><span class="tag ${o.status}">${stLabel[o.status] || o.status}</span></td>
+      <td><input value="${esc(o.tracking)}" style="width:130px;padding:5px" onchange="setStatus(['${o.orderId}'], this.value ? 'shipped' : undefined, this.value)" placeholder="เลขพัสดุ"></td>
+    </tr>`).join('') + '</table>';
+}
+
+function viewPick() {
+  const todo = orders.filter(o => o.status === 'new');
+  if (!todo.length) return '<div class="empty">ไม่มีออเดอร์ใหม่ที่ต้องหยิบ</div>';
+  const sum = {};
+  todo.forEach(o => o.items.forEach(i => sum[i.sku] = (sum[i.sku] || 0) + i.qty));
+  const rows = Object.entries(sum).sort((a, b) => (bySku[a[0]]?.shelf || '').localeCompare(bySku[b[0]]?.shelf || ''));
+  return `<h3>ใบหยิบสินค้า — ${todo.length} ออเดอร์</h3>
+  <table><tr><th>ชั้น</th><th>SKU</th><th>สินค้า</th><th>จำนวนรวม</th><th>หยิบแล้ว</th></tr>` +
+  rows.map(([sku, q]) => `<tr><td>${bySku[sku]?.shelf || '-'}</td><td>${sku}</td><td>${esc(bySku[sku]?.name)}</td><td><b style="font-size:20px">${q}</b></td><td><input type="checkbox" style="width:20px;height:20px"></td></tr>`).join('') +
+  `</table><p class="muted">ออเดอร์: ${todo.map(o => o.orderId).join(', ')}</p>
+  <p class="noprint"><button onclick="window.print()">🖨 พิมพ์ใบหยิบ</button> <button class="p" onclick="setStatus(${esc(JSON.stringify(todo.map(o => o.orderId)))}.map(String),'picked')">หยิบครบแล้ว → เปลี่ยนสถานะ</button></p>`;
+}
+
+function viewPack() {
+  const todo = orders.filter(o => o.status === 'picked');
+  if (!todo.length) return '<div class="empty">ไม่มีออเดอร์ที่รอแพ็ค (ต้องกด “หยิบครบแล้ว” ในขั้น ② ก่อน)</div>';
+  return `<p class="muted">ติ๊กตรวจสินค้าทีละรายการให้ครบ ปุ่มแพ็คเสร็จจะกดได้เมื่อติ๊กครบทุกชิ้น และตรวจชื่อ-ที่อยู่ให้ตรงกับใบจ่าหน้า</p>` +
+  todo.map(o => {
+    const done = o.items.every((i, k) => checks[o.orderId + '|' + k]);
+    return `<div class="pack-card ${done ? 'done' : ''}">
+      <h3>${esc(o.orderId)} — ${esc(o.name)} <span class="muted">${esc(o.phone)}</span></h3>
+      ${o.items.map((i, k) => `<label class="chk"><input type="checkbox" ${checks[o.orderId + '|' + k] ? 'checked' : ''} onchange="tick('${o.orderId}|${k}',this.checked)"> <b>${i.qty} ×</b> ${esc(i.name || bySku[i.sku]?.name)} <span class="muted">(${esc(i.sku)})</span></label>`).join('')}
+      <div class="muted">ส่งไป: ${esc(o.address)} ${esc(o.province)} ${esc(o.zip)}</div>
+      ${o.note ? `<div class="muted">📝 ${esc(o.note)}</div>` : ''}
+      <p style="margin:10px 0 0"><button class="p" ${done ? '' : 'disabled'} onclick="setStatus(['${o.orderId}'],'packed')">แพ็คเสร็จแล้ว</button></p>
+    </div>`;
+  }).join('');
+}
+function tick(k, v) { checks[k] = v; localStorage.setItem('packChecks', JSON.stringify(checks)); render(); }
+
+function viewLabels() {
+  const list = orders.filter(o => o.status === 'packed' || o.status === 'picked');
+  if (!list.length) return '<div class="empty">ยังไม่มีออเดอร์ที่พร้อมพิมพ์ใบจ่าหน้า (ต้องแพ็คเสร็จก่อน)</div>';
+  const sel = list.filter(o => o.status === 'packed');
+  return `<div class="lblSel noprint"><b>พิมพ์ใบจ่าหน้า (${sel.length} ใบ)</b>
+    <button class="p" onclick="window.print()">🖨 พิมพ์ / บันทึก PDF</button>
+    <button onclick="setStatus(${esc(JSON.stringify(sel.map(o => o.orderId)))},'shipped')">ทำเครื่องหมายว่าส่งแล้ว</button></div>
+  <div class="labels">` + sel.map(o => `
+    <div class="label">
+      <div class="from"><b>ผู้ส่ง:</b> ${esc(S.sender.name)} โทร ${esc(S.sender.phone)}<br>${esc(S.sender.address)}</div>
+      <div class="to">ผู้รับ: ${esc(o.name)}<br>โทร ${esc(o.phone)}
+        <div class="addr">${esc(o.address)}<br>จ.${esc(o.province)}</div>
+        <div class="zip">${esc(o.zip)}</div></div>
+      <div class="foot"><div>${(o.items || []).map(i => esc(i.sku) + ' ×' + i.qty).join('<br>')}${o.note ? '<br>📝 ' + esc(o.note) : ''}</div>
+        <div style="text-align:right"><div class="oid">${esc(o.orderId)}</div>${S.name}</div></div>
+    </div>`).join('') + '</div>' +
+    (sel.length ? '' : '<div class="empty">ยังไม่มีออเดอร์ที่ “แพ็คเสร็จแล้ว”</div>');
+}
+
+function render() {
+  $('view').innerHTML = {orders:viewOrders, pick:viewPick, pack:viewPack, labels:viewLabels}[tab]();
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+}
+document.querySelector('.tabs').addEventListener('click', e => { if (e.target.dataset.t) { tab = e.target.dataset.t; render(); } });
+$('load').onclick = load;
+if ($('key').value) load(); else render();
+</script>
+</body>
+</html>
