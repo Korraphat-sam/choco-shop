@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3e6d3"/><stop offset="1" stop-color="#d9bf9c"/></linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a2a1a"/><stop offset="1" stop-color="#2a140b"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <g transform="rotate(-12 200 200)">
+    <rect x="95" y="60" width="210" height="280" rx="14" fill="url(#bar)"/>
+    <g stroke="#1d0d06" stroke-width="3" opacity=".7">
+      <path d="M95 153H305M95 247H305M165 60V340M235 60V340"/>
+    </g>
+    <rect x="105" y="70" width="190" height="260" rx="8" fill="none" stroke="#7a4a2e" stroke-width="2" opacity=".5"/>
+    <rect x="95" y="150" width="210" height="100" fill="#f3e6d3"/>
+    <text x="200" y="192" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#2a140b" letter-spacing="3">COCOA NOIR</text>
+    <text x="200" y="228" text-anchor="middle" font-family="Georgia,serif" font-size="34" font-weight="bold" fill="#7a2e12">DARK 70%</text>
+  </g>
+</svg>

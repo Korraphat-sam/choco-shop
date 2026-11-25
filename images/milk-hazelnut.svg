@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e3c4"/><stop offset="1" stop-color="#e2b983"/></linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a5535"/><stop offset="1" stop-color="#5f3720"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <g transform="rotate(10 200 200)">
+    <rect x="95" y="60" width="210" height="280" rx="14" fill="url(#bar)"/>
+    <g stroke="#43240f" stroke-width="3" opacity=".6">
+      <path d="M95 153H305M95 247H305M165 60V340M235 60V340"/>
+    </g>
+    <rect x="95" y="150" width="210" height="100" fill="#fbf1de"/>
+    <text x="200" y="188" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#5f3720" letter-spacing="3">COCOA NOIR</text>
+    <text x="200" y="224" text-anchor="middle" font-family="Georgia,serif" font-size="26" font-weight="bold" fill="#a0521f">MILK · HAZELNUT</text>
+    <ellipse cx="130" cy="290" rx="14" ry="18" fill="#c9954f"/><ellipse cx="270" cy="105" rx="14" ry="18" fill="#c9954f"/>
+  </g>
+</svg>
