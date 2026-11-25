@@ -2,7 +2,7 @@
 window.SHOP = {
   name: "Cocoa Noir",
   // URL ของ Google Apps Script Web App (ลงท้ายด้วย /exec) — เว้นว่างไว้ = โหมดเดโม (เก็บใน localStorage)
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbybEWA8Dj87JmW088nQ9d04l3q9cllT73iC3wGAuzxjHW61PPg1q3SbXyGnb89NUGK1/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxlxLEG-St9p4EpF0qX42iqbTo2sFtW2eSXthz6-U8/dev",
   // รหัสผ่านหน้า admin (ต้องตรงกับ ADMIN_KEY ใน Script Properties ของ Apps Script)
   ADMIN_KEY: "choco2026",
   shippingFee: 40,
